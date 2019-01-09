@@ -1,0 +1,21 @@
+.THIS {
+    background-color: white;
+    padding: 4rem;
+}
+
+.THIS .custom {
+    
+   background-color: white;
+    padding: 1rem;
+}
+
+.THIS .bttn{
+   padding-left: 220px;
+    font-weight: bold;
+    font-size: medium;
+}
+
+.THIS .inline{
+    display: inline-block;
+    margin: 0;
+}

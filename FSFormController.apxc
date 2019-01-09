@@ -1,0 +1,114 @@
+public with sharing class  FSFormController {
+    
+        @AuraEnabled
+        public static FieldSetForm getForm(Id recordId, String objectName, String fieldSetName) {
+            FieldSetForm form = new FieldSetForm();        
+            form.Fields = getFields(recordId, objectName, fieldSetName);
+            return form;
+        }
+        
+        private static List<Field> getFields(Id recordId, String objectName, String fieldSetName) {
+            Schema.SObjectType objectType = null;
+            
+            if (recordId != null) {
+                objectType = recordId.getSobjectType();
+            }
+            else if (String.isNotBlank(objectName)) {
+                objectType = Schema.getGlobalDescribe().get(objectName);
+            }
+        
+        Schema.DescribeSObjectResult objectDescribe = objectType.getDescribe();
+        
+        Map<String, Schema.FieldSet> fieldSetMap = objectDescribe.fieldSets.getMap();
+        
+        Schema.FieldSet fieldSet = fieldSetMap.get(fieldSetName);
+        
+        List<Schema.FieldSetMember> fieldSetMembers = fieldSet.getFields();
+        
+        List<Field> fields = new List<Field>();
+        for (Schema.FieldSetMember fsm : fieldSetMembers) {
+            Field f = new Field(fsm);
+            
+            fields.add(f);
+        }
+        
+        return fields;
+    }
+    
+        public class FieldSetForm {
+            @AuraEnabled
+            public List<Field> Fields { get; set; }
+            
+            public FieldSetForm() {
+                Fields = new List<Field>();
+            }
+        }
+        
+    
+    
+    // --------SAME START ---------
+        @AuraEnabled
+        public static void saveSameStart (id idWOLI, Id parentId){
+            try {
+                string idWOLI1;
+                string idWOLI2;
+                string SameStart = 'Same Start';
+                
+                List<WorkOrderLineItem> parentList = [SELECT id, LineItemNumber,WorkOrderId,StartDate 
+                                                      FROM WorkOrderLineItem 
+                                                      WHERE((WorkOrderId =: parentId) and (id !=: idWOLI ) and (StartDate !=: null))
+                                                      ORDER BY LineItemNumber ASC 
+                                                      ];
+                system.debug(parentList);
+                
+                List<WorkOrderLineItem> childList = [SELECT id, LineItemNumber,WorkOrderId,StartDate 
+                                                      FROM WorkOrderLineItem 
+                                                      WHERE (id =: idWOLI) and (WorkOrderId =: parentId) and ((StartDate !=: null))
+                                                     LIMIT 1];
+                 system.debug(childList);
+                                
+                List <WorkOrderLineItem> first =  new List<WorkOrderLineItem>();                
+                List <WorkOrderLineItem> second =  new List<WorkOrderLineItem>();
+                
+                integer size1 = parentList.size();
+                integer size2 = childList.size();
+                system.debug(size1);
+                system.debug(size2);
+                
+                //comparision of Start Date between both list  
+                for(integer i=0; i < size1 ; i++){
+                    if( childList[0].StartDate == parentList[i].StartDate){
+                        
+                        first.add(parentList[i]);   
+                        system.debug('first if');
+                    }
+               			second.add(childList[0]);    
+                } 
+                
+                
+                system.debug(first); //parent List - could have more than 1 woli 
+                system.debug(second); // childList
+                
+                for(WorkOrderLineItem WOLI1 : second ){
+                    idWOLI1 = WOLI1.Id;
+                    system.debug('first woli1 id');
+                    system.debug(idWOLI1);
+                    
+               for(WorkOrderLineItem WOLI2 : first){
+                    idWOLI2 = WOLI2.Id;
+                   // firstS could have more than one woli
+                    system.debug('second woli2 id');
+                    system.debug(idWOLI2);                     
+                
+               // call validateDependency
+               validateDependency.validateDependency(idWOLI1,idWOLI2, parentId,SameStart);
+               }
+             }
+               
+          }	catch(exception e){
+                
+                system.debug(e);
+            }
+            
+        }
+}

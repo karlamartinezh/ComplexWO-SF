@@ -1,0 +1,50 @@
+public class validateDependency {
+    public static void validateDependency(id idWOLI1, id idWOLI2, Id parentId, String picklist){
+     
+        
+        
+                        
+                
+                List<WOLI_Dependency__c> validateDepend = [ SELECT id, Work_Order_Line_Item_1__c, Work_Order_Line_Item_2__c , Dependency__c, Work_Order__c
+                                                               	FROM WOLI_Dependency__c
+                                                              	WHERE ((Work_Order__c =: parentId) and (Dependency__c =: picklist) and
+                                                                      ((Work_Order_Line_Item_1__c =: idWOLI1 and Work_Order_Line_Item_2__c =: idWOLI2 ) 
+                                                                      OR (Work_Order_Line_Item_1__c =: idWOLI2 and Work_Order_Line_Item_2__c =: idWOLI1 ) ))
+                                                              	Order By Work_Order_Line_Item_1__c ASC ];
+                integer sizeVD = validateDepend.size(); 
+                system.debug(sizeVD);
+                system.debug('validateDepend');
+                system.debug(validateDepend);   
+                
+                if(idWOLI1 != idWOLI2 && idWOLI2 != null && idWOLI1 != null && sizeVD == 0){
+                    
+                  addDependency.addDependency(idWOLI1,idWOLI2,parentId,picklist); 
+                    
+                    system.debug('inside the IF ');
+                   
+                        
+                   	
+                    } else { 
+                        if(idWOLI1 != idWOLI2 && idWOLI2 != null && idWOLI1 != null && sizeVD > 0){
+                        system.debug('no cumple primera condicion');
+                        integer j=0;
+                    	for(WOLI_Dependency__c depend1 : validateDepend ){
+                        if(((validateDepend[j].Work_Order_Line_Item_1__c == idWOLI1) && 
+                           (validateDepend[j].Work_Order_Line_Item_2__c == idWOLI2)) ||
+                           ((validateDepend[j].Work_Order_Line_Item_1__c == idWOLI2) && 
+                           (validateDepend[j].Work_Order_Line_Item_2__c == idWOLI1)) ){
+                           
+                          system.debug('dont add anything ');
+                           } else {
+                              
+                               addDependency.addDependency(idWOLI1,idWOLI2,parentId,picklist);
+                               system.debug('adding others dependencies');}
+                           
+                        j++;
+                   }
+                       }  }
+                
+        
+    }
+
+}

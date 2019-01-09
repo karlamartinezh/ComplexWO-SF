@@ -1,0 +1,95 @@
+trigger StateCompleted on WorkOrderLineItem (after update) {
+    
+    string idwoli1;
+    string idwoli2;
+    string parentId1;
+    string parentId2;
+    string linenumber1;
+    string linenumber2;
+    string endDate;
+    
+    
+    for(WorkOrderLineItem woli : Trigger.new){
+        // access the old record by its IDin the Trigger.oldMap
+        WorkOrderLineItem oldWoli = Trigger.oldMap.get(woli.id);
+        
+        // Trigger.new record are conveiently the new versions!
+        boolean oldWoliIsCompleted = oldWoli.Status.equals('Completed');
+        boolean newWoliIsCompleted = woli.Status.equals('Completed');
+        
+        // check that  the field wwas changed to the correct value 
+        
+        if(!oldWoliIsCompleted && newWoliIsCompleted){
+            system.debug('the condition is true');
+            
+            List<WorkOrderLineItem> listWoli = [SELECT id,LineItemNumber,WorkOrderId,StartDate,EndDate
+                                                FROM WorkOrderLineItem
+                                                WHERE id =: woli.id ];
+            
+            system.debug(listWoli);
+            
+            for(WorkOrderLineItem woliChanged : listWoli){
+                idwoli1 = woliChanged.id;
+                parentId1 = woliChanged.WorkOrderId;
+                linenumber1 = woliChanged.LineItemNumber;
+                endDate= string.valueOf(woliChanged.EndDate);
+            }
+            system.debug(parentId1);
+            system.debug(linenumber1);
+            
+            
+            
+            List <WorkOrderLineItem> listOthersWoli = [SELECT id,LineItemNumber,WorkOrderId 
+                                                       FROM WorkOrderLineItem
+                                                       WHERE (id !=: idwoli1) AND (WorkOrderId =: parentId1) AND (LineItemNumber >: linenumber1)                                                      
+                                                       ORDER BY LineItemNumber ASC 
+                                                       LIMIT 1];
+            
+            system.debug(listOthersWoli);
+            
+            
+            for(WorkOrderLineItem OtherWoli : listOthersWoli){
+                idwoli2= OtherWoli.Id;
+                parentId2= OtherWoli.WorkOrderId;
+                linenumber2 = OtherWoli.LineItemNumber;
+                
+            }
+            system.debug(linenumber2);
+            
+            if(parentId1 == parentId2 && linenumber2 > linenumber1){
+                
+                // add dependency
+                string sAf = 'Start After Finish';
+                addDependency.addDependency(idwoli1,idwoli2,parentId1,sAf);
+                
+                //update endDate of woli1
+                system.debug('updateing woli1');
+                
+                WorkOrderLineItem woli1Update ;
+                
+                woli1Update = [SELECT id,EndDate 
+                               FROM WorkOrderLineItem
+                               WHERE id =: idwoli1 ];
+                
+                woli1Update.EndDate = datetime.now();
+                update woli1Update;
+                
+                // update start date of Woli2
+                system.debug('updating woli2');
+                WorkOrderLineItem woli2Update;
+                
+                woli2Update = [SELECT id,StartDate 
+                               FROM WorkOrderLineItem
+                               WHERE id =: idwoli2 ];
+                system.debug(woli2Update);
+                
+                woli2Update.StartDate = datetime.now();
+                
+                woli2Update.Status = 'In Progress';
+                update woli2Update;
+            }                               
+        }
+    }
+    
+    
+}

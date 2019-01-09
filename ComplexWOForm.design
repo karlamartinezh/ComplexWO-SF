@@ -1,0 +1,6 @@
+<design:component>
+	 <design:attribute name="fieldSetName" label="Field Set Name for Parent Component (WorkOrder)" description="API valid Name of the field set to use." />
+    <design:attribute name="fieldSetName2" label="Field Set Name for Child Component (WorkOrderLineItems)" description="API Name of the field set to use." />
+    <design:attribute name="sObjectName" label="Object Name for Parent Component" description="API Name of the Object to use. This only needs to be populated when not on a record detail page." />
+    <design:attribute name="sObjectName2" label="Object Name for Child Component" description="API Name of the Object to use. This only needs to be populated when not on a record detail page." />
+</design:component>

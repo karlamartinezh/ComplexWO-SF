@@ -1,0 +1,15 @@
+public class addDependency {
+    
+    	public static void addDependency (string idwoli1, string idwoli2, string parentId, string typeDepend){
+           
+           	WOLI_Dependency__c depend = new WOLI_Dependency__c ();
+            depend.Work_Order_Line_Item_1__c = idwoli1 ;
+            depend.Work_Order_Line_Item_2__c = idwoli2 ;
+            depend.Dependency__c = typeDepend;
+            depend.Work_Order__c= parentId;
+            insert depend;
+            system.debug('dependency added of type: --');
+            system.debug(typeDepend);
+        }
+
+}

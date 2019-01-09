@@ -1,0 +1,52 @@
+trigger validateSameResource on WorkOrder (after insert, after update) {
+    
+    string woliId; 
+    string WOid;
+    string idResource; 
+    boolean b2 = true;
+    
+    if (trigger.isAfter && (trigger.isInsert || trigger.isUpdate)){
+        for(WorkOrder WO : Trigger.new) {
+            
+            
+            system.debug('Im at validate same reosurce IS UPDATE');
+            //  WorkOrder oldWO = Trigger.oldMap.get(WO.id);
+            //  boolean oldWOIsChecked = boolean.valueOf(oldWO.SameResource__c);
+            
+            //  system.debug(oldWOIsChecked);
+            boolean newWOIsChecked = boolean.valueOf(WO.SameResource__c); 
+            
+            if(newWOIsChecked){
+                string myid = WO.id;
+                system.debug(myid);
+                
+                List<WorkOrder> listWO = [SELECT id,WorkOrderNumber, 
+                                          (SELECT id,LineItemNumber,WorkOrderId 
+                                           FROM WorkOrderLineItems
+                                           WHERE WorkOrderId =: WO.Id
+                                           ORDER BY LineItemNumber ASC)
+                                          FROM WorkOrder
+                                          WHERE id =: WO.id and SameResource__c =: b2];
+                
+                system.debug(listWO);
+                
+                //adding the resource to all the WOLIs and dependencies
+                
+                for(WorkOrder newWO : listWO){
+                    WOid = newWO.id;
+                    system.debug(WOid);
+                    
+                    for(WorkOrderLineItem newWoli : newWO.WorkOrderLineItems){
+                        woliId= newWoli.Id;
+                        system.debug('inside new woli');
+                        system.debug(woliId);
+                        system.debug('before add resource');                        
+                    	idResource = addResource.addResource(woliId,WOid);
+                        saveSameResource.saveSameResource(woliId, WOid,idResource);
+                    }  
+                    
+                }            
+                
+            }  }
+    }
+}

@@ -1,0 +1,111 @@
+<aura:component controller="FSFormController"                			
+                implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" 
+                access="global">
+    
+    <aura:attribute name="fields" type="Object[]" access="public"/>
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    
+    
+    <aura:attribute name="fieldSetName" type="String" description="The api name of the field set to use from the given object." />
+    <aura:attribute name="fieldSetName2" type="String" description="The api name of the field set to use from the given object." />
+    
+    <aura:attribute name="sObjectName" type="string" default ="WorkOrder"/>    
+    <aura:attribute name="sObjectName2" type="string" default ="WorkOrderLineItem"/>
+    
+    <aura:attribute name="object1" type="WorkOrder" default="{'sobjectType':'WorkOrder'}" />    
+    
+    <aura:attribute name="WOLIDetailsList" type="List" default="[]"/>
+    <aura:attribute name="ParentRecordId" type="String" />
+    
+  
+    
+    <!--FORM start here-->
+    <div class="custom">    
+        <lightning:recordEditForm aura:id="test"
+                                  objectApiName="{!v.sObjectName}"
+                                  recordId="{!v.recordId}"
+                                  onsuccess="{!c.handleSuccess}" 
+                                  >
+            <lightning:messages />
+            
+            <!-- Header -->   
+            
+            <div class="slds-size_5-of-8 slds-box slds-theme_shade slds-grid slds-align_absolute-center">
+                <div class="slds-page-header slds-grid slds-grid_pull-padded-medium slds-theme_default">
+                    
+                    <div class="slds-order_1 slds-theme_default">
+                        <div class="slds-col slds-p-horizontal_medium slds-theme_default"> 
+                            <img src="{!$Resource.twiloLogo}" class="slds-theme_default"/> 
+                        </div>
+                    </div>
+                    
+                    <div class="slds-order_2 slds-theme_default ">
+                        <div class="slds-col slds-p-horizontal_small slds-theme_default">
+                            <div class="slds-text-heading_large slds-theme_default" > 
+                                <h1 class="slds-theme_default" > Complex Work Order.</h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- /Header -->
+            
+            
+            <!-- Creating the Parent Form--> 
+            <div class="slds-size_5-of-8 slds-box slds-theme_shade slds-grid slds-align_absolute-center">
+                <div class="slds-col slds-order_2 slds-small-order_1">
+                    <aura:iteration items="{!v.fields}" var="field" indexVar="parentIndex" >
+                        <aura:if isTrue="{!or(field.Required, field.DBRequired)}">
+                                <p class="slds-required"  title="required" >*</p>
+                        </aura:if>
+                             <lightning:inputField aura:id=" 'fieldId' + parentIndex" 
+                                                   fieldName="{!field.APIName}"                                               
+                                                   type="{!field.Type}"
+                                                   class="slds-size_2-of-2 slds-p-top_none slds-m-top_none" />
+
+                        
+                    </aura:iteration>
+                    
+                    <hr/>
+                    
+                    <!-- SAME RESOURCE CHECKBOX --> 
+                    
+                </div>
+            </div>
+            <!--/ Creating the Parent Form-->  
+            
+        </lightning:recordEditForm> 
+        <aura:iteration items="{!v.WOLIDetailsList}" var="item" indexVar="index">
+            <div class="slds-size_5-of-8 slds-box slds-theme_shade slds-grid slds-align_absolute-center">
+                <div class="slds-col slds-order_2 slds-small-order_1">
+                    <!--Dynamic Binding -->
+                    <c:Add_WOLI fieldSetName2="{!v.fieldSetName2}" 
+                                sObjectName2="{!v.sObjectName2}" 
+                                RecordIdChild="{!v.ParentRecordId}" 
+                                WOLIDetailsInnerComponent="{!v.WOLIDetailsList}" 
+                                indexNo="{!index}"/>
+                    <hr/>
+                </div>
+            </div>
+        </aura:iteration>
+        
+        <!-- Adding WOLI List to Parent Form-->
+        <lightning:layout horizontalAlign="left" class="slds-m-small">
+            <div class="bttn slds-col slds-order_2 slds-large-order_1">
+                <lightning:button iconName="utility:add" 
+                                  variant="border-filled" 
+                                  label="Add Work Order Line Items" 
+                                  onclick="{!c.addDetails}"
+                                  />          
+            </div>
+        </lightning:layout>
+        
+        <!-- /Adding WOLI List to Parent Form-->
+        <lightning:layout horizontalAlign="center" class="slds-m-top_large">    
+            <lightning:button aura:id="butt" variant="brand" label="Submit" title="Submit" type="submit" onclick="{!c.handleSubmit}" />
+            <lightning:button variant="neutral" label="Cancel" title="Cancel" type="text" onclick="{!c.handleCancel}"/>
+        </lightning:layout> 
+        
+    </div>
+</aura:component>

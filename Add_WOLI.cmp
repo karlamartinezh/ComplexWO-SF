@@ -1,0 +1,83 @@
+<aura:component controller="FSFormController"   
+                implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" 
+                access="global" >
+    
+    
+    <!-- WOLI Object-->
+    
+    <aura:attribute name="fieldSetName2" type="String" description="The api name of the field set to use from the given object." />
+    <aura:attribute name="sObjectName2" type="String" default="WorkOrderLineItem" />   
+    <aura:attribute name="object2" type="WorkOrderLineItem" default="{'sobjectType ':'WorkOrderLineItem','WorkOrderId':''}" />
+    
+    
+    <aura:attribute name="indexNo" type="Integer"/>
+    <aura:attribute name="sequenceNo" type="Integer"/>
+   
+    <aura:attribute name="idfield" type="string" />
+
+    <aura:attribute name="idchld" type="string" />
+    <aura:attribute name="RecordIdChild" type="String"/>
+        
+    <aura:attribute name="value" type="String[]"/>
+    
+
+    <aura:attribute name="WOLIDetailsInnerComponent" type="List" />
+    
+    
+    <aura:attribute name="fields2" type="WorkOrderLineItem[]" default="{'sobjectType':'WorkOrderLineItem','WorkOrderId':''}" access="global" />
+    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doinit}"/> 
+    
+    
+    
+    
+    
+    <!---whenever any change occurs in RecordIdChild aura handler calls to the controller-->
+    
+    <aura:handler name="change" value="{!v.RecordIdChild}" action="{!c.handleSubmit}"/>
+    
+    <aura:handler name="change" value="{!v.indexNo}" action="{!c.changeInIndexNo}" />
+    
+    
+    <lightning:recordEditForm aura:id="record2"
+                                  objectApiName="{!v.sObjectName2}"
+                                  recordId="{!v.recordId}"
+                                  onsuccess= "{!c.handleSuccess}"
+                                  >
+    
+    <div class="slds-size_5-of-8 slds-box slds-theme_shade">
+        <div class="slds-page-header slds-grid slds-grid_pull-padded-medium slds-theme_default">
+            <div class="slds-col slds-p-horizontal_medium slds-theme_default">
+                <div class="slds-text-heading--small slds-theme_default">
+                     <h2 class="slds-theme_default"> WOLI # {!v.sequenceNo} </h2> 
+                </div> 
+            </div>
+        </div>
+        
+        
+            <lightning:messages />
+            	
+            <div class="hidefield" >
+            <lightning:inputField fieldName="WorkOrderId" value="{!v.idfield}" disabled="true"  />
+            </div>	
+            <aura:iteration aura:id="fld2" items="{!v.fields2}" var="field" indexVar="listIndex">
+                 <aura:if isTrue="{!or(field.Required, field.DBRequired)}">
+                                <p class="slds-required"  title="required" >*</p>
+                        </aura:if>                
+                <lightning:inputField aura:id="{'iD' + !listIndex}"
+                                      fieldName="{!field.APIName }" 
+                                      type="{!field.Type}"
+                                      class=" slds-p-top_none slds-m-top_none" 
+                                      disabled="false"/>	
+               
+                
+            </aura:iteration>
+          
+            <div class=" slds-m-top_small">
+            <lightning:button  iconName="utility:delete" variant="border-filled" label="Delete this WOLI" onclick="{!c.deleteDetails}"/>
+            </div>         
+        </div>                                                                                                                                                                                                                                     
+        </lightning:recordEditForm>
+    
+</aura:component>

@@ -1,0 +1,82 @@
+public class saveSameResource {
+    public static void saveSameResource(id idWOLI, Id parentId, id idResource){
+        
+        string idWOLI1;
+        string idWOLI2;
+        string SameResource = 'Same Resource';
+     
+      
+        
+        List<WorkOrderLineItem> parentList2 = [SELECT Id,LineItemNumber, WorkOrderId,
+                                              (SELECT Id,Service_Resource__c, Parent_Work_Order__c, Work_Order_Line_Item__c 
+                                               FROM Resources__r 
+                                               WHERE ((Service_Resource__c =: idResource) and (Parent_Work_Order__c =: parentId)) )
+                                              FROM WorkOrderLineItem 
+                                              WHERE WorkOrderId =: parentId and Id !=: idWOLI
+                                              ORDER BY LineItemNumber ASC];
+        
+        system.debug(parentList2);
+        
+        List<WorkOrderLineItem> childList2 = [SELECT id, LineItemNumber, WorkOrderId,
+                                             (SELECT Id,Service_Resource__c , Parent_Work_Order__c ,Work_Order_Line_Item__c
+                                              FROM Resources__r 
+                                              WHERE ((Service_Resource__c =: idResource) and (Parent_Work_Order__c =: parentId )) )
+                                             FROM WorkOrderLineItem 
+                                             WHERE id =: idWOLI and WorkOrderId =: parentId 
+                                             LIMIT 1];
+                                            
+        system.debug(childList2);
+        
+        
+        
+        List <WorkOrderLineItem> first =  new List<WorkOrderLineItem>();                
+        List <WorkOrderLineItem> second =  new List<WorkOrderLineItem>();
+        
+                integer size1 = parentList2.size();
+                integer size2 = childList2.size();
+        		system.debug('Inside of Save Same Resource');
+                system.debug(size1);
+            
+        		system.debug(parentList2);
+        		system.debug(childList2);
+        
+        if(size1 !=0){                
+                //comparision and validation between both list  
+                for(integer i=0; i < size1 ; i++){
+                    system.debug('inside validation FOR');
+
+                   
+                        if(childList2[0].id != parentList2[i].id){
+                        
+                        first.add(parentList2[i]);   
+                        system.debug('first if save Same Resource');
+                    }
+               			second.add(childList2[0]);    
+                } 
+                
+                
+                system.debug(first); //parent List - could have more than 1 woli 
+                system.debug(second); // childList
+                
+                for(WorkOrderLineItem WOLI1 : second ){
+                    idWOLI1 = WOLI1.Id;
+                    system.debug('first woli1 id save Same Resource');
+                    system.debug(idWOLI1);
+                    
+               for(WorkOrderLineItem WOLI2 : first){
+                    idWOLI2 = WOLI2.Id;
+                   // firstS could have more than one woli
+                    system.debug('second woli2 id save Same Resource');
+                    system.debug(idWOLI2);                     
+                
+               // call validateDependency
+               validateDependency.validateDependency(idWOLI1,idWOLI2, parentId,SameResource);
+               }
+             }
+		
+        }            
+                 
+        
+    }
+
+}

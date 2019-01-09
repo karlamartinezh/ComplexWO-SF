@@ -1,0 +1,25 @@
+trigger deleteDependencies on WorkOrder (after update) {
+
+    if(Trigger.isUpdate){
+               
+        for(WorkOrder wo : Trigger.new){
+            
+            WorkOrder oldWO = Trigger.oldMap.get(wo.id);
+            boolean oldResetDependIsChecked = boolean.valueOf(oldWO.Reset_dependencies__c);
+            boolean resetDependIsChecked = boolean.valueOf(wo.Reset_dependencies__c); 
+            
+            if(resetDependIsChecked){
+                
+                List<WOLI_Dependency__c> woWD = [SELECT id,Work_Order__c
+                                                 FROM WOLI_Dependency__c
+                                                 WHERE Work_Order__c =: wo.id ];
+                
+                system.debug(woWD);
+                id woId= wo.id;
+                system.debug(woId);
+                changeState.changeState(woId);
+                Database.delete(woWD, false);
+            }
+        }
+    }
+}
